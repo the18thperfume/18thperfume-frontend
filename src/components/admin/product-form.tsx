@@ -100,10 +100,11 @@ export default function ProductForm({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Tên sản phẩm */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
                 Tên sản phẩm *
               </label>
               <input
+                id="name"
                 type="text"
                 {...register('name')}
                 className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
@@ -116,10 +117,11 @@ export default function ProductForm({
 
             {/* Thương hiệu */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="brand" className="block text-sm font-medium text-gray-700 mb-1">
                 Thương hiệu *
               </label>
               <input
+                id="brand"
                 type="text"
                 {...register('brand')}
                 className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
@@ -132,10 +134,11 @@ export default function ProductForm({
 
             {/* Giới tính */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
                 Giới tính *
               </label>
               <select
+                id="category"
                 {...register('category')}
                 className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                   errors.category ? 'border-red-500' : 'border-gray-300'
@@ -153,10 +156,11 @@ export default function ProductForm({
 
             {/* Phân khúc */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="segment" className="block text-sm font-medium text-gray-700 mb-1">
                 Phân khúc *
               </label>
               <select
+                id="segment"
                 {...register('segment')}
                 className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                   errors.segment ? 'border-red-500' : 'border-gray-300'
@@ -174,10 +178,11 @@ export default function ProductForm({
 
             {/* Xuất xứ */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="origin" className="block text-sm font-medium text-gray-700 mb-1">
                 Xuất xứ *
               </label>
               <input
+                id="origin"
                 type="text"
                 {...register('origin')}
                 className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
@@ -190,10 +195,11 @@ export default function ProductForm({
 
             {/* Nhóm hương */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="fragranceFamily" className="block text-sm font-medium text-gray-700 mb-1">
                 Nhóm hương *
               </label>
               <input
+                id="fragranceFamily"
                 type="text"
                 {...register('fragranceFamily')}
                 className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
@@ -206,10 +212,11 @@ export default function ProductForm({
 
             {/* Nồng độ */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="concentration" className="block text-sm font-medium text-gray-700 mb-1">
                 Nồng độ *
               </label>
               <input
+                id="concentration"
                 type="text"
                 {...register('concentration')}
                 className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
@@ -222,10 +229,11 @@ export default function ProductForm({
 
             {/* Năm ra mắt */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="releaseYear" className="block text-sm font-medium text-gray-700 mb-1">
                 Năm ra mắt *
               </label>
               <input
+                id="releaseYear"
                 type="number"
                 {...register('releaseYear', { valueAsNumber: true })}
                 className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
@@ -286,10 +294,11 @@ export default function ProductForm({
           <div className="grid grid-cols-1 gap-4">
             {/* Top Notes */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="topNotes" className="block text-sm font-medium text-gray-700 mb-1">
                 Top Notes
               </label>
               <input
+                id="topNotes"
                 type="text"
                 {...register('topNotes')}
                 className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
@@ -302,10 +311,11 @@ export default function ProductForm({
 
             {/* Middle Notes */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="middleNotes" className="block text-sm font-medium text-gray-700 mb-1">
                 Middle Notes
               </label>
               <input
+                id="middleNotes"
                 type="text"
                 {...register('middleNotes')}
                 className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
@@ -318,10 +328,11 @@ export default function ProductForm({
 
             {/* Base Notes */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="baseNotes" className="block text-sm font-medium text-gray-700 mb-1">
                 Base Notes
               </label>
               <input
+                id="baseNotes"
                 type="text"
                 {...register('baseNotes')}
                 className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
@@ -335,7 +346,7 @@ export default function ProductForm({
 
           <div className="bg-blue-50 p-4 rounded-md">
             <p className="text-sm text-blue-800">
-              <strong>Lưu ý:</strong> Hệ thống sẽ tự động tạo danh sách "Thành phần" 
+              <strong>Lưu ý:</strong> Hệ thống sẽ tự động tạo danh sách &quot;Thành phần&quot; 
               bằng cách tổng hợp tất cả các giá trị từ Top, Middle và Base Notes.
             </p>
           </div>

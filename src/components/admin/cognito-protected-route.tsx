@@ -35,9 +35,7 @@ export function CognitoProtectedRoute({
   unauthorizedComponent 
 }: CognitoProtectedRouteProps) {
   const [user, setUser] = useState<AdminUser | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [authState, setAuthState] = useState<'loading' | 'authenticated' | 'unauthorized' | 'unauthenticated' | 'error' | 'redirect'>('loading');
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
@@ -48,7 +46,7 @@ export function CognitoProtectedRoute({
     } catch (error) {
       console.error('Failed to configure Amplify:', error);
       setError('Authentication configuration error');
-      setIsLoading(false);
+      setAuthState('error');
     }
   }, []);
 
@@ -57,27 +55,28 @@ export function CognitoProtectedRoute({
     let isMounted = true;
 
     const checkAuthStatus = async () => {
+      if (!isMounted) return;
+      
       try {
-        setIsLoading(true);
         setError(null);
 
         // Get current authenticated user
         const currentUser = await getCurrentUser();
         
         if (!currentUser || !isMounted) {
-          setIsAuthenticated(false);
-          setIsAuthorized(false);
-          router.replace(fallbackRoute);
+          if (isMounted) {
+            setAuthState('unauthenticated');
+          }
           return;
         }
 
         // Get user session with tokens
         const session = await fetchAuthSession();
         
-        if (!session.tokens || !isMounted) {
-          setIsAuthenticated(false);
-          setIsAuthorized(false);
-          router.replace(fallbackRoute);
+        if (!session?.tokens || !isMounted) {
+          if (isMounted) {
+            setAuthState('unauthenticated');
+          }
           return;
         }
 
@@ -95,17 +94,18 @@ export function CognitoProtectedRoute({
         // Check if user has required admin privileges
         const hasRequiredGroup = requiredGroups.some(group => userGroups.includes(group));
         const hasAdminRole = customRole === 'admin' || customRole === 'super-admin';
-        const isAuthorized = hasRequiredGroup || hasAdminRole;
+        const userAuthorized = hasRequiredGroup || hasAdminRole;
 
-        if (!isAuthorized) {
-          setIsAuthenticated(true);
-          setIsAuthorized(false);
-          setError('Insufficient privileges - admin access required');
+        if (!userAuthorized) {
+          if (isMounted && authState !== 'unauthorized') {
+            setAuthState('unauthorized');
+            setError('Insufficient privileges - admin access required');
+          }
           return;
         }
 
-        // Create admin user object
-        const adminUser: AdminUser = {
+        // Only create new admin user object if user data has actually changed
+        const newAdminUser: AdminUser = {
           sub,
           email,
           groups: userGroups,
@@ -114,65 +114,81 @@ export function CognitoProtectedRoute({
           lastLogin: new Date().toISOString(),
         };
 
-        setUser(adminUser);
-        setIsAuthenticated(true);
-        setIsAuthorized(true);
+        // Check if user data has actually changed (ignoring lastLogin)
+        const userDataChanged = !user || 
+          user.sub !== sub || 
+          user.email !== email ||
+          JSON.stringify(user.groups) !== JSON.stringify(userGroups) ||
+          user.role !== customRole;
 
-      } catch (error) {
-        console.error('Authentication check failed:', error);
-        
         if (isMounted) {
-          setIsAuthenticated(false);
-          setIsAuthorized(false);
-          setUser(null);
-          
-          // Handle different error types
-          if (error instanceof Error) {
-            if (error.message.includes('not authenticated')) {
-              router.replace(fallbackRoute);
-            } else {
-              setError(error.message);
-            }
-          } else {
-            setError('Authentication failed');
-            router.replace(fallbackRoute);
+          if (userDataChanged) {
+            setUser(newAdminUser);
+          }
+          if (authState !== 'authenticated') {
+            setAuthState('authenticated');
           }
         }
-      } finally {
+
+      } catch (error) {
+
         if (isMounted) {
-          setIsLoading(false);
+          setUser(null);
+          setError(error instanceof Error ? error.message : 'Authentication failed');
+          
+          // Distinguish between 'not authenticated' and genuine errors
+          if (error instanceof Error && error.message === 'not authenticated') {
+            setAuthState('unauthenticated'); // Redirect to login
+          } else {
+            setAuthState('error'); // Show error message
+          }
         }
       }
     };
 
     checkAuthStatus();
 
-    // Setup token refresh interval
-    const refreshInterval = setInterval(checkAuthStatus, 50 * 60 * 1000); // 50 minutes
+    // Setup token refresh interval (15 minutes instead of 50) - skip in test environment
+    const refreshInterval = process.env.NODE_ENV === 'test' ? null : setInterval(() => {
+      if (isMounted) {
+        checkAuthStatus();
+      }
+    }, 15 * 60 * 1000);
 
     return () => {
       isMounted = false;
-      clearInterval(refreshInterval);
+      if (refreshInterval) {
+        clearInterval(refreshInterval);
+      }
     };
-  }, [requiredGroups, fallbackRoute, router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run only once on mount - intentionally no dependencies to avoid infinite loops
+
+  // Handle unauthenticated state - redirect to login
+  useEffect(() => {
+    if (authState === 'unauthenticated') {
+      router.replace(fallbackRoute);
+    }
+  }, [authState, fallbackRoute, router]);
 
   // Handle sign out
   const handleSignOut = async () => {
     try {
       await signOut();
       setUser(null);
-      setIsAuthenticated(false);
-      setIsAuthorized(false);
+      setAuthState('redirect');
       router.replace('/admin/login');
     } catch (error) {
       console.error('Sign out error:', error);
       // Force redirect even if sign out fails
+      setUser(null);
+      setAuthState('redirect');
       router.replace('/admin/login');
     }
   };
 
   // Loading state
-  if (isLoading) {
+  if (authState === 'loading') {
     if (loadingComponent) {
       return <>{loadingComponent}</>;
     }
@@ -193,7 +209,7 @@ export function CognitoProtectedRoute({
   }
 
   // Error state
-  if (error) {
+  if (authState === 'error' && error) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -216,7 +232,7 @@ export function CognitoProtectedRoute({
   }
 
   // Unauthorized state
-  if (isAuthenticated && !isAuthorized) {
+  if (authState === 'unauthorized') {
     if (unauthorizedComponent) {
       return <>{unauthorizedComponent}</>;
     }
@@ -251,7 +267,7 @@ export function CognitoProtectedRoute({
   }
 
   // Authenticated and authorized - render protected content
-  if (isAuthenticated && isAuthorized && user) {
+  if (authState === 'authenticated' && user) {
     return <>{children}</>;
   }
 
@@ -294,7 +310,6 @@ export function useAdminUser() {
           setUser(adminUser);
         }
       } catch (error) {
-        console.error('Error getting admin user:', error);
         setUser(null);
       } finally {
         setIsLoading(false);

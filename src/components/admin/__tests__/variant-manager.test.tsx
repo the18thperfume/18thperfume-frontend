@@ -7,7 +7,7 @@ jest.mock('../variant-form', () => {
   return function MockVariantForm({ initialData, onSubmit, onCancel }: any) {
     return (
       <div data-testid="variant-form">
-        <h3>{initialData ? 'Edit' : 'Add'} Variant Form</h3>
+        <h3>{initialData ? 'Edit Variant Form' : 'Add Variant Form'}</h3>
         <button 
           onClick={() => onSubmit({
             variantName: 'Test Variant',
@@ -104,7 +104,8 @@ describe('VariantManager', () => {
     );
 
     // First variant: 200,000 - 15% = 170,000
-    expect(screen.getByText('170.000 VNĐ')).toBeInTheDocument();
+    const priceElements = screen.getAllByText('170.000 VNĐ');
+    expect(priceElements.length).toBeGreaterThan(0);
     // Sale percentage display
     expect(screen.getByText('(-15%)')).toBeInTheDocument();
 
@@ -122,7 +123,9 @@ describe('VariantManager', () => {
 
     expect(screen.getByText('2')).toBeInTheDocument(); // Total variants
     expect(screen.getByText('75 sản phẩm')).toBeInTheDocument(); // Total stock (50 + 25)
-    expect(screen.getByText('170.000 VNĐ')).toBeInTheDocument(); // Min price
+    // Check for min price in summary section - use getAllByText since it appears multiple times
+    const minPriceElements = screen.getAllByText('170.000 VNĐ');
+    expect(minPriceElements.length).toBeGreaterThan(0); // Min price appears in summary
   });
 
   it('opens add variant form', async () => {
@@ -150,19 +153,21 @@ describe('VariantManager', () => {
       />
     );
 
+    // Find edit buttons by their position (first variant's edit button)
     const editButtons = screen.getAllByRole('button');
-    const editButton = editButtons.find(button => 
-      button.querySelector('svg') && button.getAttribute('class')?.includes('outline')
-    );
+    // Edit button should be the first outline button after the main "Thêm biến thể" button
+    const editButton = editButtons.find(button => {
+      const classes = button.getAttribute('class') || '';
+      return classes.includes('outline') && !button.textContent?.includes('Thêm');
+    });
     
-    if (editButton) {
-      fireEvent.click(editButton);
+    expect(editButton).toBeTruthy();
+    fireEvent.click(editButton!);
 
-      await waitFor(() => {
-        expect(screen.getByTestId('variant-form')).toBeInTheDocument();
-        expect(screen.getByText('Edit Variant Form')).toBeInTheDocument();
-      });
-    }
+    await waitFor(() => {
+      expect(screen.getByTestId('variant-form')).toBeInTheDocument();
+      expect(screen.getByText('Edit Variant Form')).toBeInTheDocument();
+    });
   });
 
   it('adds new variant', async () => {

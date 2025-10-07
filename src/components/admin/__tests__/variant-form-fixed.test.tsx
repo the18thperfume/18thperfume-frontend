@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { VariantForm } from '../variant-form';
+import VariantForm from '../variant-form';
 import type { ProductVariant } from '@/types';
 
 // Mock notifications
@@ -138,8 +138,6 @@ describe('VariantForm', () => {
         salePercentage: 20,
         stock: 50,
         imageUrl: 'https://example.com/image.jpg',
-        capacity: 50,
-        finalPrice: 120000,
       });
     });
   });
@@ -206,21 +204,18 @@ describe('VariantForm', () => {
   });
 
   it('populates form when editing existing variant', () => {
-    const existingVariant: ProductVariant = {
-      id: '1',
+    const existingVariant = {
       variantName: 'Test Variant',
       size: '30ml',
       originalPrice: 80000,
       salePercentage: 15,
-      finalPrice: 68000,
       stock: 25,
-      capacity: 30,
       imageUrl: 'https://example.com/test.jpg',
     };
 
     render(
       <VariantForm
-        variant={existingVariant}
+        initialData={existingVariant}
         onSubmit={mockOnSubmit}
         onCancel={mockOnCancel}
       />

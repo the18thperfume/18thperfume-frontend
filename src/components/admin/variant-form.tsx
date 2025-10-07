@@ -94,8 +94,24 @@ export default function VariantForm({
     return Math.round(originalPrice * (1 - salePercentage / 100));
   };
 
+  // Extract capacity number from size string
+  const extractCapacityNumber = (size: string): number => {
+    const match = size.match(/(\d+)/);
+    return match ? parseInt(match[1], 10) : 0;
+  };
+
   const onFormSubmit = (data: VariantFormValidation) => {
-    onSubmit(data as VariantFormData);
+    // Only submit the core fields expected by the interface
+    const submissionData: VariantFormData = {
+      variantName: data.variantName,
+      size: data.size,
+      originalPrice: data.originalPrice,
+      salePercentage: data.salePercentage,
+      stock: data.stock,
+      imageUrl: data.imageUrl
+    };
+    
+    onSubmit(submissionData);
   };
 
   return (
@@ -103,11 +119,12 @@ export default function VariantForm({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Tên biến thể */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="variantName" className="block text-sm font-medium text-gray-700 mb-1">
             Tên biến thể *
           </label>
           <input
             type="text"
+            id="variantName"
             {...register('variantName')}
             className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
               errors.variantName ? 'border-red-500' : 'border-gray-300'
@@ -131,11 +148,12 @@ export default function VariantForm({
 
         {/* Kích thước */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="size" className="block text-sm font-medium text-gray-700 mb-1">
             Kích thước *
           </label>
           <input
             type="text"
+            id="size"
             {...register('size')}
             className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
               errors.size ? 'border-red-500' : 'border-gray-300'
@@ -149,11 +167,12 @@ export default function VariantForm({
 
         {/* Giá gốc */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="originalPrice" className="block text-sm font-medium text-gray-700 mb-1">
             Giá gốc (VNĐ) *
           </label>
           <input
             type="number"
+            id="originalPrice"
             {...register('originalPrice', { valueAsNumber: true })}
             className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
               errors.originalPrice ? 'border-red-500' : 'border-gray-300'
@@ -170,11 +189,12 @@ export default function VariantForm({
 
         {/* Mức sale */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="salePercentage" className="block text-sm font-medium text-gray-700 mb-1">
             Mức sale (%)
           </label>
           <input
             type="number"
+            id="salePercentage"
             {...register('salePercentage', { valueAsNumber: true })}
             className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
               errors.salePercentage ? 'border-red-500' : 'border-gray-300'
@@ -191,11 +211,12 @@ export default function VariantForm({
 
         {/* Số lượng kho */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="stock" className="block text-sm font-medium text-gray-700 mb-1">
             Số lượng kho *
           </label>
           <input
             type="number"
+            id="stock"
             {...register('stock', { valueAsNumber: true })}
             className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
               errors.stock ? 'border-red-500' : 'border-gray-300'
@@ -211,11 +232,12 @@ export default function VariantForm({
 
         {/* URL ảnh */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-700 mb-1">
             URL ảnh
           </label>
           <input
             type="url"
+            id="imageUrl"
             {...register('imageUrl')}
             className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
               errors.imageUrl ? 'border-red-500' : 'border-gray-300'

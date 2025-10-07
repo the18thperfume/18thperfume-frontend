@@ -58,6 +58,8 @@ export interface VariantFormData {
   salePercentage: number;
   stock: number;
   imageUrl?: string;
+  capacity?: number;
+  finalPrice?: number;
 }
 
 export interface APIResponse<T = unknown> {

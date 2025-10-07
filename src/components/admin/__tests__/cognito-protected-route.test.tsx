@@ -103,15 +103,19 @@ describe('CognitoProtectedRoute', () => {
       },
     };
 
+    console.log('Setting up mocks for admin test');
     mockGetCurrentUser.mockResolvedValue(mockUser as any);
     mockFetchAuthSession.mockResolvedValue(mockSession as any);
     
+    console.log('Rendering component for admin test');
     renderComponent();
     
+    console.log('Waiting for protected content to appear');
     await waitFor(() => {
       expect(screen.getByTestId('protected-content')).toBeInTheDocument();
-      expect(screen.getByText('Protected Content')).toBeInTheDocument();
-    });
+    }, { timeout: 3000 });
+    
+    expect(screen.getByText('Protected Content')).toBeInTheDocument();
   });
 
   it('should accept users with custom admin role', async () => {
@@ -213,7 +217,8 @@ describe('CognitoProtectedRoute', () => {
     renderComponent();
     
     await waitFor(() => {
-      expect(mockRouter.replace).toHaveBeenCalledWith('/admin/login');
+      expect(screen.getByText('Lỗi xác thực')).toBeInTheDocument();
+      expect(screen.getByText('Invalid ID token')).toBeInTheDocument();
     });
   });
 

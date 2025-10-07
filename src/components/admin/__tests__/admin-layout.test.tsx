@@ -9,11 +9,13 @@ jest.mock('next/navigation', () => ({
 
 // Mock Next.js Link component
 jest.mock('next/link', () => {
-  return ({ children, href, onClick, className }: any) => (
+  const MockLink = ({ children, href, onClick, className }: any) => (
     <a href={href} onClick={onClick} className={className}>
       {children}
     </a>
   );
+  MockLink.displayName = 'MockLink';
+  return MockLink;
 });
 
 const mockUsePathname = usePathname as jest.MockedFunction<typeof usePathname>;
