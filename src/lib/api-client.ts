@@ -1,12 +1,13 @@
 import axios from 'axios';
+import appConfig from './config';
 
 // API client configuration
 const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001',
+  baseURL: appConfig.api.baseUrl,
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 10000,
+  timeout: appConfig.api.timeout,
 });
 
 // Request interceptor to add auth token
@@ -14,7 +15,7 @@ apiClient.interceptors.request.use(
   (config) => {
     // Get token from localStorage if available (client-side only)
     if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem(appConfig.auth.tokenKey);
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
@@ -36,7 +37,8 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401) {
       // Unauthorized - clear token and redirect to login
       if (typeof window !== 'undefined') {
-        localStorage.removeItem('token');
+        localStorage.removeItem(appConfig.auth.tokenKey);
+        localStorage.removeItem(appConfig.auth.refreshTokenKey);
         window.location.href = '/login';
       }
     }
