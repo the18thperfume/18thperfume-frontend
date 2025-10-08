@@ -25,7 +25,7 @@ export default function NewProductPage() {
       showSuccess(`Sản phẩm "${newProduct.name}" đã được tạo thành công!`);
       
       // Redirect to products list or edit page
-      router.push(`/admin/products/${newProduct.productId}/edit`);
+      router.push(`/admin/products/edit?id=${newProduct.productId}`);
     } catch (error: any) {
       showError(error.message || 'Có lỗi xảy ra khi tạo sản phẩm');
       console.error('Create product error:', error);

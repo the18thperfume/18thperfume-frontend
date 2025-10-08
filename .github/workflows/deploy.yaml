@@ -59,7 +59,7 @@ jobs:
         run: npm ci
 
       - name: Build for production
-        run: npm run build
+        run: npm run export
         env:
           NEXT_PUBLIC_API_URL: ${{ github.ref == 'refs/heads/main' && secrets.PROD_API_URL || secrets.DEV_API_URL }}
 
