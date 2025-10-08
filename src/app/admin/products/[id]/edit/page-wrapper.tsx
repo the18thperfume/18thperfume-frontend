@@ -1,4 +1,4 @@
-import EditProductClient from './edit-client';
+import EditProductClient from './page-client';
 
 // Generate static params for static export
 export async function generateStaticParams() {
