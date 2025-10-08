@@ -1,24 +1,10 @@
-import { Amplify } from 'aws-amplify';
-import { config } from './config';
+import { initializeAmplify } from './amplify-init';
 
 /**
  * Amplify Auth Configuration for Admin Panel
  */
 export const configureAmplifyAuth = () => {
-  const authConfig = {
-    Auth: {
-      Cognito: {
-        userPoolId: config.auth.userPoolId,
-        userPoolClientId: config.auth.userPoolClientId,
-        loginWith: {
-          email: true,
-          username: false,
-        },
-      }
-    }
-  };
-
-  Amplify.configure(authConfig);
+  initializeAmplify();
 };
 
 /**

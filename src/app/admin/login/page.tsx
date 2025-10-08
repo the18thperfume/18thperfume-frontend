@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, Shield, Loader2 } from 'lucide-react';
 import { useAdminAuth } from '@/lib/admin-auth';
+import { initializeAmplify } from '@/lib/amplify-init';
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState('');
@@ -14,6 +15,11 @@ export default function AdminLoginPage() {
   
   const router = useRouter();
   const { signIn } = useAdminAuth();
+
+  // Initialize Amplify early
+  useEffect(() => {
+    initializeAmplify();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
