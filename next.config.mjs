@@ -1,11 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',
+  // Remove output: export temporarily to support dynamic admin routes
+  // For production, consider using output: export only for public pages
+  // and deploying admin as a separate app or using server-side rendering
   trailingSlash: true,
   images: {
     unoptimized: true,
   },
-  // Disable server-side features for static export
   experimental: {
     esmExternals: true,
   },

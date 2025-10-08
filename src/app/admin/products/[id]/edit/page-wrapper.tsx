@@ -1,8 +1,8 @@
-import EditProductClient from './page-client';
+import EditProductClient from './edit-client';
 
 // Generate static params for static export
 export async function generateStaticParams() {
-  // For admin routes, return empty array to support dynamic IDs
+  // For admin routes, return empty array to allow dynamic routing
   return [];
 }
 
