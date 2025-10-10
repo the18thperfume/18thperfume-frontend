@@ -1,6 +1,33 @@
 # Hướng dẫn Cấu hình AWS Cognito cho Admin Login
 
-## 🔧 Bước 1: Cập nhật Environment Variables
+## 🔧 Bước 1: Cập nhật Environmen## 🔍 Debug Tips
+
+### Console Logs to Watch:
+- Mở **Developer Console** để xem logs
+- Tìm các log bắt đầu với 🔧, 🔐, 📋, 🔍, 🔑
+
+### Common Issues:
+- **"MISSING" trong config**: Kiểm tra lại environment variables
+- **"user does not exist"**: Kiểm tra username/email
+- **"NEW_PASSWORD_REQUIRED"**: Flow bình thường cho user mới
+- **"Insufficient privileges"**: 
+  - Kiểm tra user có trong admin group không?
+  - Tìm log `🔍 CognitoProtectedRoute - Admin privilege check`
+  - Xem `userGroups` có chứa `admin` không?
+  - Xem `hasRequiredGroup` có là `true` không?
+
+### Troubleshooting Steps:
+1. **Kiểm tra user groups**:
+   ```
+   🔍 CognitoProtectedRoute - Admin privilege check: {
+     userGroups: ['admin'],  // ← Phải có 'admin' ở đây
+     hasRequiredGroup: true, // ← Phải là true
+     userAuthorized: true    // ← Phải là true
+   }
+   ```
+
+2. **Nếu userGroups rỗng**: User chưa được add vào admin group
+3. **Nếu hasRequiredGroup false**: Kiểm tra logic matching groupsles
 
 Trong file `.env.local`, thay thế các placeholder bằng giá trị thực từ AWS Cognito:
 
@@ -35,10 +62,18 @@ NEXT_PUBLIC_AWS_REGION=ap-southeast-1
 - Sử dụng **email** để đăng nhập (VD: `admin@example.com`)
 
 ### Thêm user vào Admin Group:
-1. Trong User Pool, chọn tab **Users**
-2. Chọn user admin
-3. Chọn tab **Group memberships**
-4. Thêm user vào group `admin` hoặc tạo group mới
+1. Trong User Pool, chọn tab **Groups**
+2. Tạo group mới nếu chưa có:
+   - Group name: `admin`
+   - Description: `Administrator group`
+3. Quay lại tab **Users**
+4. Chọn user admin
+5. Chọn tab **Group memberships** 
+6. Click **Add user to group**
+7. Chọn group `admin`
+8. Click **Add**
+
+**⚠️ QUAN TRỌNG**: Đây là bước BẮT BUỘC để user có thể đăng nhập admin!
 
 ## 🔐 Bước 4: Kiểm tra Admin Privileges
 

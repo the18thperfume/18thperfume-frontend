@@ -72,6 +72,8 @@ export default function AdminLoginPage() {
       const success = await confirmNewPassword(newPassword);
       
       if (success) {
+        // After successful password change, Cognito automatically signs in the user
+        // Admin privilege checking will happen in the protected route
         router.replace('/admin');
       } else {
         setError('Không thể đặt mật khẩu mới. Vui lòng thử lại.');

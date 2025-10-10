@@ -229,25 +229,20 @@ export const confirmNewPassword = async (newPassword: string): Promise<{
     });
 
     if (confirmResult.isSignedIn) {
-      // Check admin privileges after password change
-      const sessionCheck = await checkAdminSession();
+      console.log('✅ Password confirmation successful - user is now signed in');
       
-      if (!sessionCheck.isAdmin) {
-        await signOut();
-        return {
-          success: false,
-          error: sessionCheck.error || 'Admin privileges required',
-        };
-      }
-
+      // After password change, user is automatically signed in
+      // We'll defer admin privilege checking to the next session check
+      // to avoid timing issues with token propagation
       return {
         success: true,
-        user: sessionCheck.user,
+        // user will be populated by the next checkAdminSession call
       };
     } else {
+      console.log('❌ Password confirmation incomplete:', confirmResult.nextStep);
       return {
         success: false,
-        error: 'Password confirmation failed',
+        error: 'Password confirmation failed - additional steps required',
       };
     }
   } catch (error) {
@@ -370,8 +365,10 @@ export function useAdminAuth(): AuthState & {
 
     const result = await confirmNewPassword(newPassword);
     
+    // After successful password confirmation, user is signed in but we don't 
+    // immediately check admin privileges to avoid timing issues
     setAuthState({
-      user: result.user || null,
+      user: null, // Will be populated by CognitoProtectedRoute
       isAuthenticated: result.success,
       isLoading: false,
       error: result.error || null,

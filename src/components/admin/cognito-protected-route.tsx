@@ -96,13 +96,26 @@ export function CognitoProtectedRoute({
         const hasAdminRole = customRole === 'admin' || customRole === 'super-admin';
         const userAuthorized = hasRequiredGroup || hasAdminRole;
 
+        console.log('🔍 CognitoProtectedRoute - Admin privilege check:', {
+          email,
+          userGroups,
+          customRole,
+          requiredGroups,
+          hasRequiredGroup,
+          hasAdminRole,
+          userAuthorized
+        });
+
         if (!userAuthorized) {
+          console.log('❌ User not authorized for admin access');
           if (isMounted && authState !== 'unauthorized') {
             setAuthState('unauthorized');
             setError('Insufficient privileges - admin access required');
           }
           return;
         }
+
+        console.log('✅ User authorized for admin access');
 
         // Only create new admin user object if user data has actually changed
         const newAdminUser: AdminUser = {
