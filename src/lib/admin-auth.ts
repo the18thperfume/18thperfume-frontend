@@ -133,7 +133,7 @@ export const checkAdminSession = async (): Promise<{
 /**
  * Sign in admin user with Cognito
  */
-export const signInAdmin = async (email: string, password: string): Promise<{
+export const signInAdmin = async (username: string, password: string): Promise<{
   success: boolean;
   user?: AdminUser;
   error?: string;
@@ -142,11 +142,11 @@ export const signInAdmin = async (email: string, password: string): Promise<{
     // Configure Amplify
     configureAmplifyAuth();
 
-    console.log('🔐 Starting admin sign in for:', email);
+    console.log('🔐 Starting admin sign in for:', username);
 
     // Attempt sign in
     const signInResult = await signIn({
-      username: email,
+      username: username,
       password: password,
     });
 
@@ -249,7 +249,7 @@ export const refreshAdminSession = async (): Promise<boolean> => {
  * Hook for admin authentication state management
  */
 export function useAdminAuth(): AuthState & {
-  signIn: (email: string, password: string) => Promise<boolean>;
+  signIn: (username: string, password: string) => Promise<boolean>;
   signOut: () => Promise<void>;
   refreshSession: () => Promise<void>;
   checkSession: () => Promise<void>;
@@ -286,10 +286,10 @@ export function useAdminAuth(): AuthState & {
   }, []);
 
   // Sign in function
-  const handleSignIn = async (email: string, password: string): Promise<boolean> => {
+  const handleSignIn = async (username: string, password: string): Promise<boolean> => {
     setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
 
-    const result = await signInAdmin(email, password);
+    const result = await signInAdmin(username, password);
     
     setAuthState({
       user: result.user || null,

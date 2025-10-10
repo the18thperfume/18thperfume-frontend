@@ -19,6 +19,7 @@ export const initializeAmplify = () => {
     userPoolClientId: userPoolClientId || 'MISSING',
     region,
     nodeEnv: process.env.NODE_ENV,
+    hasValidConfig: !!userPoolId && !!userPoolClientId,
   });
 
   // Only configure if we have the required values
@@ -38,7 +39,7 @@ export const initializeAmplify = () => {
           userPoolClientId,
           loginWith: {
             email: true,
-            username: false,
+            username: true,
           },
         }
       }
