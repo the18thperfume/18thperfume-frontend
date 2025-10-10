@@ -58,7 +58,7 @@ describe('CognitoProtectedRoute', () => {
     renderComponent();
     
     await waitFor(() => {
-      expect(mockRouter.replace).toHaveBeenCalledWith('/admin/login');
+      expect(mockRouter.replace).toHaveBeenCalledWith('/auth/login');
     });
   });
 

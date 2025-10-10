@@ -9,7 +9,7 @@ export default function AdminRootLayout({
   return (
     <CognitoProtectedRoute 
       requiredGroups={['admin', 'super-admin']}
-      fallbackRoute="/admin/login"
+      fallbackRoute="/auth/login"
     >
       <AdminLayout>{children}</AdminLayout>
     </CognitoProtectedRoute>

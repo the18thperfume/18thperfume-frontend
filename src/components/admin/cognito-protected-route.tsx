@@ -30,7 +30,7 @@ interface CognitoProtectedRouteProps {
 export function CognitoProtectedRoute({ 
   children, 
   requiredGroups = ['admin'],
-  fallbackRoute = '/admin/login',
+  fallbackRoute = '/auth/login',
   loadingComponent,
   unauthorizedComponent 
 }: CognitoProtectedRouteProps) {
@@ -177,13 +177,13 @@ export function CognitoProtectedRoute({
       await signOut();
       setUser(null);
       setAuthState('redirect');
-      router.replace('/admin/login');
+      router.replace('/auth/login');
     } catch (error) {
       console.error('Sign out error:', error);
       // Force redirect even if sign out fails
       setUser(null);
       setAuthState('redirect');
-      router.replace('/admin/login');
+      router.replace('/auth/login');
     }
   };
 
