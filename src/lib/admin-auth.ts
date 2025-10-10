@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { signIn, signOut, getCurrentUser, fetchAuthSession } from 'aws-amplify/auth';
+import { signIn, signOut, getCurrentUser, fetchAuthSession, confirmSignIn } from 'aws-amplify/auth';
 import { configureAmplifyAuth } from '@/lib/admin-auth-config';
 
 export interface AdminUser {
@@ -137,6 +137,7 @@ export const signInAdmin = async (username: string, password: string): Promise<{
   success: boolean;
   user?: AdminUser;
   error?: string;
+  challengeName?: string;
 }> => {
   try {
     // Configure Amplify
@@ -184,6 +185,13 @@ export const signInAdmin = async (username: string, password: string): Promise<{
         success: true,
         user: sessionCheck.user,
       };
+    } else if (signInResult.nextStep?.signInStep === 'CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED') {
+      console.log('🔑 New password required for user');
+      return {
+        success: false,
+        error: 'NEW_PASSWORD_REQUIRED',
+        challengeName: 'NEW_PASSWORD_REQUIRED'
+      };
     } else {
       console.log('❌ Sign in not complete:', signInResult.nextStep);
       return {
@@ -196,6 +204,57 @@ export const signInAdmin = async (username: string, password: string): Promise<{
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Sign in failed',
+    };
+  }
+};
+
+/**
+ * Confirm new password for admin user
+ */
+export const confirmNewPassword = async (newPassword: string): Promise<{
+  success: boolean;
+  user?: AdminUser;
+  error?: string;
+}> => {
+  try {
+    console.log('🔑 Confirming new password...');
+    
+    const confirmResult = await confirmSignIn({
+      challengeResponse: newPassword
+    });
+
+    console.log('📋 Confirm result:', {
+      isSignedIn: confirmResult.isSignedIn,
+      nextStep: confirmResult.nextStep
+    });
+
+    if (confirmResult.isSignedIn) {
+      // Check admin privileges after password change
+      const sessionCheck = await checkAdminSession();
+      
+      if (!sessionCheck.isAdmin) {
+        await signOut();
+        return {
+          success: false,
+          error: sessionCheck.error || 'Admin privileges required',
+        };
+      }
+
+      return {
+        success: true,
+        user: sessionCheck.user,
+      };
+    } else {
+      return {
+        success: false,
+        error: 'Password confirmation failed',
+      };
+    }
+  } catch (error) {
+    console.error('❌ Confirm new password failed:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Password confirmation failed',
     };
   }
 };
@@ -249,8 +308,9 @@ export const refreshAdminSession = async (): Promise<boolean> => {
  * Hook for admin authentication state management
  */
 export function useAdminAuth(): AuthState & {
-  signIn: (username: string, password: string) => Promise<boolean>;
+  signIn: (username: string, password: string) => Promise<{ success: boolean; challengeName?: string }>;
   signOut: () => Promise<void>;
+  confirmNewPassword: (newPassword: string) => Promise<boolean>;
   refreshSession: () => Promise<void>;
   checkSession: () => Promise<void>;
 } {
@@ -286,10 +346,29 @@ export function useAdminAuth(): AuthState & {
   }, []);
 
   // Sign in function
-  const handleSignIn = async (username: string, password: string): Promise<boolean> => {
+  const handleSignIn = async (username: string, password: string): Promise<{ success: boolean; challengeName?: string }> => {
     setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
 
     const result = await signInAdmin(username, password);
+    
+    setAuthState({
+      user: result.user || null,
+      isAuthenticated: result.success,
+      isLoading: false,
+      error: result.error || null,
+    });
+
+    return { 
+      success: result.success,
+      challengeName: result.challengeName 
+    };
+  };
+
+  // Confirm new password function
+  const handleConfirmNewPassword = async (newPassword: string): Promise<boolean> => {
+    setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
+
+    const result = await confirmNewPassword(newPassword);
     
     setAuthState({
       user: result.user || null,
@@ -337,6 +416,7 @@ export function useAdminAuth(): AuthState & {
     ...authState,
     signIn: handleSignIn,
     signOut: handleSignOut,
+    confirmNewPassword: handleConfirmNewPassword,
     refreshSession: handleRefreshSession,
     checkSession: handleCheckSession,
   };

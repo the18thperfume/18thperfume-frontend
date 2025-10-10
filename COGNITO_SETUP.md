@@ -57,10 +57,27 @@ NEXT_PUBLIC_AWS_REGION=ap-southeast-1
 3. Nhập username/email và password
 4. Kiểm tra console logs để debug
 
-## 🔍 Debug Tips
+## � Xử lý First-Time Login
+
+Khi admin tạo user mới trong Cognito, user sẽ có status **FORCE_CHANGE_PASSWORD**:
+
+### Quy trình đăng nhập lần đầu:
+1. Nhập username/email và temporary password
+2. Hệ thống sẽ tự động chuyển sang form "Đặt mật khẩu mới"
+3. Nhập mật khẩu mới theo yêu cầu:
+   - Ít nhất 8 ký tự
+   - Ít nhất 1 chữ hoa
+   - Ít nhất 1 chữ thường  
+   - Ít nhất 1 số
+   - Ít nhất 1 ký tự đặc biệt
+4. Xác nhận mật khẩu
+5. Hệ thống sẽ tự động đăng nhập và chuyển đến admin dashboard
+
+## �🔍 Debug Tips
 
 - Mở **Developer Console** để xem logs
-- Tìm các log bắt đầu với 🔧, 🔐, 📋, 🔍
+- Tìm các log bắt đầu với 🔧, 🔐, 📋, 🔍, 🔑
 - Nếu thấy "MISSING" trong config, kiểm tra lại environment variables
 - Nếu thấy "user does not exist", kiểm tra username/email
 - Nếu thấy "insufficient privileges", kiểm tra admin groups/roles
+- Nếu thấy "NEW_PASSWORD_REQUIRED", đây là flow bình thường cho user mới
