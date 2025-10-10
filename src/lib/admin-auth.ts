@@ -37,9 +37,12 @@ export const checkAdminSession = async (): Promise<{
     // Configure Amplify if not already configured
     configureAmplifyAuth();
 
+    console.log('🔍 Checking admin session...');
+
     // Get current user
     const currentUser = await getCurrentUser();
     if (!currentUser) {
+      console.log('❌ No current user found');
       return {
         isAuthenticated: false,
         isAdmin: false,
@@ -47,9 +50,15 @@ export const checkAdminSession = async (): Promise<{
       };
     }
 
+    console.log('👤 Current user:', {
+      username: currentUser.username,
+      userId: currentUser.userId
+    });
+
     // Get session tokens
     const session = await fetchAuthSession();
     if (!session.tokens?.idToken?.payload) {
+      console.log('❌ No session tokens found');
       return {
         isAuthenticated: false,
         isAdmin: false,
@@ -58,8 +67,25 @@ export const checkAdminSession = async (): Promise<{
     }
 
     const payload = session.tokens.idToken.payload;
+    console.log('📜 Token payload:', {
+      sub: payload.sub,
+      email: payload.email,
+      'cognito:groups': payload['cognito:groups'],
+      'custom:role': payload['custom:role'],
+      allClaims: Object.keys(payload)
+    });
+
     const userGroups = payload['cognito:groups'] as string[] || [];
     const customRole = payload['custom:role'] as string;
+
+    console.log('🔐 Checking privileges:', {
+      userGroups,
+      customRole,
+      hasAdminGroup: userGroups.includes('admin'),
+      hasSuperAdminGroup: userGroups.includes('super-admin'),
+      hasAdminRole: customRole === 'admin',
+      hasSuperAdminRole: customRole === 'super-admin'
+    });
 
     // Check admin privileges
     const isAdmin = userGroups.includes('admin') || 
@@ -68,6 +94,7 @@ export const checkAdminSession = async (): Promise<{
                    customRole === 'super-admin';
 
     if (!isAdmin) {
+      console.log('❌ Insufficient privileges');
       return {
         isAuthenticated: true,
         isAdmin: false,
@@ -85,6 +112,8 @@ export const checkAdminSession = async (): Promise<{
       lastLogin: new Date().toISOString(),
     };
 
+    console.log('✅ Admin session valid:', adminUser);
+
     return {
       isAuthenticated: true,
       isAdmin: true,
@@ -92,7 +121,7 @@ export const checkAdminSession = async (): Promise<{
     };
 
   } catch (error) {
-    console.error('Session check failed:', error);
+    console.error('❌ Session check failed:', error);
     return {
       isAuthenticated: false,
       isAdmin: false,
@@ -113,15 +142,35 @@ export const signInAdmin = async (email: string, password: string): Promise<{
     // Configure Amplify
     configureAmplifyAuth();
 
+    console.log('🔐 Starting admin sign in for:', email);
+
     // Attempt sign in
     const signInResult = await signIn({
       username: email,
       password: password,
     });
 
+    console.log('📋 Sign in result:', {
+      isSignedIn: signInResult.isSignedIn,
+      nextStep: signInResult.nextStep
+    });
+
     if (signInResult.isSignedIn) {
       // Verify admin privileges
+      console.log('✅ Sign in successful, checking admin privileges...');
       const sessionCheck = await checkAdminSession();
+      
+      console.log('🔍 Session check result:', {
+        isAuthenticated: sessionCheck.isAuthenticated,
+        isAdmin: sessionCheck.isAdmin,
+        error: sessionCheck.error,
+        user: sessionCheck.user ? {
+          email: sessionCheck.user.email,
+          groups: sessionCheck.user.groups,
+          role: sessionCheck.user.role
+        } : null
+      });
+
       if (!sessionCheck.isAdmin) {
         // Sign out non-admin user
         await signOut();
@@ -136,13 +185,14 @@ export const signInAdmin = async (email: string, password: string): Promise<{
         user: sessionCheck.user,
       };
     } else {
+      console.log('❌ Sign in not complete:', signInResult.nextStep);
       return {
         success: false,
         error: 'Sign in incomplete - additional steps may be required',
       };
     }
   } catch (error) {
-    console.error('Sign in failed:', error);
+    console.error('❌ Sign in failed:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Sign in failed',

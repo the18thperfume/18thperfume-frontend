@@ -53,7 +53,7 @@ export default function AdminLoginPage() {
             Đăng nhập Admin
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Truy cập hệ thống quản trị 18th Perfume
+            Truy cập hệ thống quản trị The 18th Perfume
           </p>
         </div>
 
