@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
@@ -70,24 +70,45 @@ export default function ProductForm({
 
   const { register, handleSubmit, watch, setValue, formState: { errors }, control } = form;
   
+  // Debug: Track form values to detect unexpected resets
+  useEffect(() => {
+    const currentName = watch('name');
+    const currentBrand = watch('brand');
+    if (currentName || currentBrand) {
+      console.log('📝 Form values tracked:', { name: currentName, brand: currentBrand });
+    }
+  }, [watch('name'), watch('brand')]);
+  
   const watchedSeasons = watch('seasons') || [];
   const watchedVariants = watch('variants') || [];
 
-  const handleSeasonChange = (season: string, checked: boolean) => {
+  const handleSeasonChange = useCallback((season: string, checked: boolean) => {
     const currentSeasons = watchedSeasons;
     const newSeasons = checked 
       ? [...currentSeasons.filter((s) => s !== season), season]
       : currentSeasons.filter((s) => s !== season);
     setValue('seasons', newSeasons as any);
-  };
+  }, [watchedSeasons, setValue]);
 
   const onFormSubmit = async (data: ProductFormValidation) => {
     await onSubmit(data as ProductFormData);
   };
 
-  const handleVariantsChange = (newVariants: any[]) => {
-    setValue('variants', newVariants);
-  };
+  const handleVariantsChange = useCallback((newVariants: any[]) => {
+    console.log('🔄 Updating variants in product form:', newVariants.length, 'variants');
+    console.log('📋 Current form values preserved:', {
+      name: form.getValues('name'),
+      brand: form.getValues('brand'),
+      category: form.getValues('category')
+    });
+    
+    // Update only variants without affecting other form fields
+    setValue('variants', newVariants, { 
+      shouldValidate: false, 
+      shouldDirty: true,
+      shouldTouch: false
+    });
+  }, [setValue, form]);
 
   return (
     <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">

@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { VariantFormData } from '@/types';
@@ -13,7 +13,7 @@ interface VariantManagerProps {
   errors?: { [key: string]: any };
 }
 
-export default function VariantManager({ 
+function VariantManager({ 
   variants, 
   onVariantsChange, 
   errors = {} 
@@ -21,41 +21,43 @@ export default function VariantManager({
   const [editingIndex, setEditingIndex] = React.useState<number | null>(null);
   const [showForm, setShowForm] = React.useState(false);
 
-  const addVariant = () => {
+  const addVariant = useCallback(() => {
     setEditingIndex(null);
     setShowForm(true);
-  };
+  }, []);
 
-  const editVariant = (index: number) => {
+  const editVariant = useCallback((index: number) => {
     setEditingIndex(index);
     setShowForm(true);
-  };
+  }, []);
 
-  const deleteVariant = (index: number) => {
+  const deleteVariant = useCallback((index: number) => {
     if (confirm('Bạn có chắc chắn muốn xóa biến thể này?')) {
       const newVariants = variants.filter((_, i) => i !== index);
       onVariantsChange(newVariants);
     }
-  };
+  }, [variants, onVariantsChange]);
 
-  const saveVariant = (variantData: VariantFormData) => {
+  const saveVariant = useCallback((variantData: VariantFormData) => {
     if (editingIndex !== null) {
-      // Edit existing variant
+      // Edit existing variant - only update local state
       const newVariants = [...variants];
       newVariants[editingIndex] = variantData;
       onVariantsChange(newVariants);
+      console.log('✅ Biến thể đã được cập nhật local (chưa lưu lên server)');
     } else {
-      // Add new variant
+      // Add new variant - only update local state
       onVariantsChange([...variants, variantData]);
+      console.log('✅ Biến thể mới đã được thêm local (chưa lưu lên server)');
     }
     setShowForm(false);
     setEditingIndex(null);
-  };
+  }, [editingIndex, variants, onVariantsChange]);
 
-  const cancelForm = () => {
+  const cancelForm = useCallback(() => {
     setShowForm(false);
     setEditingIndex(null);
-  };
+  }, []);
 
   // Extract capacity from variant name
   const extractCapacity = (variantName: string): string => {
@@ -201,24 +203,37 @@ export default function VariantManager({
 
         {/* Summary */}
         {variants.length > 0 && (
-          <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-            <h4 className="font-medium text-blue-900 mb-2">Tóm tắt biến thể</h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-              <div>
-                <span className="text-blue-700">Tổng số biến thể:</span>
-                <span className="font-medium ml-2">{variants.length}</span>
+          <div className="mt-6 space-y-4">
+            {/* Important Notice */}
+            <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <div className="flex items-center">
+                <div className="w-2 h-2 bg-yellow-400 rounded-full mr-2"></div>
+                <p className="text-yellow-800 text-sm font-medium">
+                  Các biến thể chỉ được lưu tạm thời. Nhấn "Lưu sản phẩm" để lưu toàn bộ lên hệ thống.
+                </p>
               </div>
-              <div>
-                <span className="text-blue-700">Tổng kho:</span>
-                <span className="font-medium ml-2">
-                  {variants.reduce((sum, v) => sum + v.stock, 0)} sản phẩm
-                </span>
-              </div>
-              <div>
-                <span className="text-blue-700">Giá từ:</span>
-                <span className="font-medium ml-2">
-                  {Math.min(...variants.map(v => calculateFinalPrice(v.originalPrice, v.salePercentage))).toLocaleString('vi-VN')} VNĐ
-                </span>
+            </div>
+            
+            {/* Summary Stats */}
+            <div className="p-4 bg-blue-50 rounded-lg">
+              <h4 className="font-medium text-blue-900 mb-2">Tóm tắt biến thể</h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                <div>
+                  <span className="text-blue-700">Tổng số biến thể:</span>
+                  <span className="font-medium ml-2">{variants.length}</span>
+                </div>
+                <div>
+                  <span className="text-blue-700">Tổng kho:</span>
+                  <span className="font-medium ml-2">
+                    {variants.reduce((sum, v) => sum + v.stock, 0)} sản phẩm
+                  </span>
+                </div>
+                <div>
+                  <span className="text-blue-700">Giá từ:</span>
+                  <span className="font-medium ml-2">
+                    {Math.min(...variants.map(v => calculateFinalPrice(v.originalPrice, v.salePercentage))).toLocaleString('vi-VN')} VNĐ
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -227,3 +242,13 @@ export default function VariantManager({
     </Card>
   );
 }
+
+// Memoize component to prevent unnecessary re-renders
+export default React.memo(VariantManager, (prevProps, nextProps) => {
+  // Only re-render if variants array or errors actually changed
+  return (
+    JSON.stringify(prevProps.variants) === JSON.stringify(nextProps.variants) &&
+    JSON.stringify(prevProps.errors) === JSON.stringify(nextProps.errors) &&
+    prevProps.onVariantsChange === nextProps.onVariantsChange
+  );
+});

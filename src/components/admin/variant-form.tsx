@@ -111,6 +111,8 @@ export default function VariantForm({
       imageUrl: data.imageUrl
     };
     
+    // This only saves to local state, NOT to backend
+    console.log('📝 Lưu biến thể vào local state (không submit lên server)');
     onSubmit(submissionData);
   };
 
@@ -287,7 +289,7 @@ export default function VariantForm({
         </Button>
         <Button type="submit" disabled={isSubmitting}>
           <Save className="mr-2 h-4 w-4" />
-          {isSubmitting ? 'Đang lưu...' : 'Lưu biến thể'}
+          {isSubmitting ? 'Đang lưu...' : 'Lưu biến thể (tạm thời)'}
         </Button>
       </div>
     </form>
