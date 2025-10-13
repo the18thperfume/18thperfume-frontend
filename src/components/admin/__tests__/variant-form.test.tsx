@@ -31,7 +31,7 @@ describe('VariantForm', () => {
     expect(screen.getByLabelText('Mức sale (%)')).toBeInTheDocument();
     expect(screen.getByLabelText('Số lượng kho *')).toBeInTheDocument();
     expect(screen.getByLabelText('URL ảnh')).toBeInTheDocument();
-    expect(screen.getByText('Lưu biến thể')).toBeInTheDocument();
+    expect(screen.getByText('Lưu biến thể (tạm thời)')).toBeInTheDocument();
     expect(screen.getByText('Hủy')).toBeInTheDocument();
   });
 
@@ -43,7 +43,7 @@ describe('VariantForm', () => {
       />
     );
 
-    const submitButton = screen.getByText('Lưu biến thể');
+    const submitButton = screen.getByText('Lưu biến thể (tạm thời)');
     fireEvent.click(submitButton);
 
     await waitFor(() => {
@@ -70,7 +70,7 @@ describe('VariantForm', () => {
     fireEvent.change(originalPriceInput, { target: { value: '500' } }); // Below minimum
     fireEvent.change(stockInput, { target: { value: '10' } });
 
-    fireEvent.click(screen.getByText('Lưu biến thể'));
+    fireEvent.click(screen.getByText('Lưu biến thể (tạm thời)'));
 
     await waitFor(() => {
       // Check that form validation prevents submission with invalid price
@@ -98,7 +98,7 @@ describe('VariantForm', () => {
     fireEvent.change(saleInput, { target: { value: '150' } }); // Above maximum
     fireEvent.change(stockInput, { target: { value: '10' } });
 
-    fireEvent.click(screen.getByText('Lưu biến thể'));
+    fireEvent.click(screen.getByText('Lưu biến thể (tạm thời)'));
 
     await waitFor(() => {
       // Check that form validation prevents submission with invalid sale percentage
@@ -128,7 +128,7 @@ describe('VariantForm', () => {
     fireEvent.change(stockInput, { target: { value: '50' } });
     fireEvent.change(imageUrlInput, { target: { value: 'https://example.com/image.jpg' } });
 
-    fireEvent.click(screen.getByText('Lưu biến thể'));
+    fireEvent.click(screen.getByText('Lưu biến thể (tạm thời)'));
 
     await waitFor(() => {
       expect(mockOnSubmit).toHaveBeenCalledWith({
@@ -162,7 +162,7 @@ describe('VariantForm', () => {
     fireEvent.change(stockInput, { target: { value: '10' } });
     fireEvent.change(imageUrlInput, { target: { value: 'invalid-url' } });
 
-    fireEvent.click(screen.getByText('Lưu biến thể'));
+    fireEvent.click(screen.getByText('Lưu biến thể (tạm thời)'));
 
     await waitFor(() => {
       // Check that form validation prevents submission with invalid URL

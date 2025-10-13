@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
@@ -71,24 +71,25 @@ export default function ProductForm({
   const { register, handleSubmit, watch, setValue, formState: { errors }, control } = form;
   
   // Debug: Track form values to detect unexpected resets
+  const watchedName = watch('name');
+  const watchedBrand = watch('brand');
+  
   useEffect(() => {
-    const currentName = watch('name');
-    const currentBrand = watch('brand');
-    if (currentName || currentBrand) {
-      console.log('📝 Form values tracked:', { name: currentName, brand: currentBrand });
+    if (watchedName || watchedBrand) {
+      console.log('📝 Form values tracked:', { name: watchedName, brand: watchedBrand });
     }
-  }, [watch('name'), watch('brand')]);
+  }, [watchedName, watchedBrand]);
   
   const watchedSeasons = watch('seasons') || [];
   const watchedVariants = watch('variants') || [];
 
   const handleSeasonChange = useCallback((season: string, checked: boolean) => {
-    const currentSeasons = watchedSeasons;
+    const currentSeasons = watch('seasons') || [];
     const newSeasons = checked 
       ? [...currentSeasons.filter((s) => s !== season), season]
       : currentSeasons.filter((s) => s !== season);
     setValue('seasons', newSeasons as any);
-  }, [watchedSeasons, setValue]);
+  }, [watch, setValue]);
 
   const onFormSubmit = async (data: ProductFormValidation) => {
     await onSubmit(data as ProductFormData);

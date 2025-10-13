@@ -209,7 +209,7 @@ function VariantManager({
               <div className="flex items-center">
                 <div className="w-2 h-2 bg-yellow-400 rounded-full mr-2"></div>
                 <p className="text-yellow-800 text-sm font-medium">
-                  Các biến thể chỉ được lưu tạm thời. Nhấn "Lưu sản phẩm" để lưu toàn bộ lên hệ thống.
+                  Các biến thể chỉ được lưu tạm thời. Nhấn &ldquo;Lưu sản phẩm&rdquo; để lưu toàn bộ lên hệ thống.
                 </p>
               </div>
             </div>
