@@ -97,7 +97,8 @@ export default function ProductForm({
 
   const handleVariantsChange = useCallback((newVariants: any[]) => {
     console.log('🔄 Updating variants in product form:', newVariants.length, 'variants');
-    console.log('📋 Current form values preserved:', {
+    console.log('� New variants data:', newVariants);
+    console.log('�📋 Current form values preserved:', {
       name: form.getValues('name'),
       brand: form.getValues('brand'),
       category: form.getValues('category')
@@ -109,6 +110,12 @@ export default function ProductForm({
       shouldDirty: true,
       shouldTouch: false
     });
+    
+    // Verify the update
+    setTimeout(() => {
+      const currentVariants = form.getValues('variants');
+      console.log('✅ Variants after setValue:', currentVariants);
+    }, 0);
   }, [setValue, form]);
 
   return (

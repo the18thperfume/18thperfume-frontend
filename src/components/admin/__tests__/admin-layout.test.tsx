@@ -36,7 +36,7 @@ describe('AdminLayout', () => {
       </AdminLayout>
     );
 
-    expect(screen.getByText('18th Perfume Admin')).toBeInTheDocument();
+    expect(screen.getByText('The 18th Perfume Admin')).toBeInTheDocument();
     expect(screen.getByText('Test Content')).toBeInTheDocument();
     expect(screen.getAllByText('Dashboard')).toHaveLength(2); // Sidebar link + header
     expect(screen.getByText('Quản lý Sản phẩm')).toBeInTheDocument();

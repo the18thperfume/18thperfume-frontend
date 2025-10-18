@@ -21,6 +21,18 @@ function VariantManager({
   const [editingIndex, setEditingIndex] = React.useState<number | null>(null);
   const [showForm, setShowForm] = React.useState(false);
 
+  // Debug: Log variants data when it changes
+  React.useEffect(() => {
+    console.log('🎯 VariantManager received variants:', variants);
+    console.log('🔍 Variants structure:', variants.map((v, i) => ({
+      index: i,
+      name: v.variantName,
+      size: v.size,
+      price: v.originalPrice,
+      stock: v.stock
+    })));
+  }, [variants]);
+
   const addVariant = useCallback(() => {
     setEditingIndex(null);
     setShowForm(true);
@@ -39,15 +51,20 @@ function VariantManager({
   }, [variants, onVariantsChange]);
 
   const saveVariant = useCallback((variantData: VariantFormData) => {
+    console.log('🔍 Saving variant data:', variantData);
+    
     if (editingIndex !== null) {
       // Edit existing variant - only update local state
       const newVariants = [...variants];
       newVariants[editingIndex] = variantData;
+      console.log('📝 Updated variants array:', newVariants);
       onVariantsChange(newVariants);
       console.log('✅ Biến thể đã được cập nhật local (chưa lưu lên server)');
     } else {
       // Add new variant - only update local state
-      onVariantsChange([...variants, variantData]);
+      const newVariants = [...variants, variantData];
+      console.log('📝 New variants array:', newVariants);
+      onVariantsChange(newVariants);
       console.log('✅ Biến thể mới đã được thêm local (chưa lưu lên server)');
     }
     setShowForm(false);
@@ -69,9 +86,11 @@ function VariantManager({
     return 'Khác';
   };
 
-  // Calculate final price
+  // Calculate final price với kiểm tra an toàn
   const calculateFinalPrice = (originalPrice: number, salePercentage: number): number => {
-    return Math.round(originalPrice * (1 - salePercentage / 100));
+    const price = Number(originalPrice) || 0;
+    const sale = Number(salePercentage) || 0;
+    return Math.round(price * (1 - sale / 100));
   };
 
   return (
@@ -117,16 +136,17 @@ function VariantManager({
                     <div>
                       <label className="text-sm font-medium text-gray-600">Dung tích</label>
                       <p className="text-blue-600 font-medium">
-                        {extractCapacity(variant.variantName)}
+                        {variant.variantName ? extractCapacity(variant.variantName) : 'Chưa xác định'}
                       </p>
                     </div>
                     <div>
                       <label className="text-sm font-medium text-gray-600">Giá</label>
                       <div>
                         <p className="font-medium">
-                          {calculateFinalPrice(variant.originalPrice, variant.salePercentage).toLocaleString('vi-VN')} VNĐ
+                          {variant.originalPrice && variant.salePercentage !== undefined ? 
+                            calculateFinalPrice(variant.originalPrice, variant.salePercentage).toLocaleString('vi-VN') : 'Chưa cập nhật'} VNĐ
                         </p>
-                        {variant.salePercentage > 0 && (
+                        {variant.originalPrice && variant.salePercentage > 0 && (
                           <p className="text-sm text-gray-500">
                             <span className="line-through">{variant.originalPrice.toLocaleString('vi-VN')} VNĐ</span>
                             <span className="text-red-500 ml-2">(-{variant.salePercentage}%)</span>
@@ -136,8 +156,8 @@ function VariantManager({
                     </div>
                     <div>
                       <label className="text-sm font-medium text-gray-600">Kho</label>
-                      <p className={variant.stock > 0 ? 'text-green-600' : 'text-red-600'}>
-                        {variant.stock} sản phẩm
+                      <p className={variant.stock !== undefined && variant.stock > 0 ? 'text-green-600' : 'text-red-600'}>
+                        {variant.stock !== undefined ? variant.stock : 'Chưa cập nhật'} sản phẩm
                       </p>
                     </div>
                   </div>
@@ -225,13 +245,17 @@ function VariantManager({
                 <div>
                   <span className="text-blue-700">Tổng kho:</span>
                   <span className="font-medium ml-2">
-                    {variants.reduce((sum, v) => sum + v.stock, 0)} sản phẩm
+                    {variants.reduce((sum, v) => sum + (Number(v.stock) || 0), 0)} sản phẩm
                   </span>
                 </div>
                 <div>
                   <span className="text-blue-700">Giá từ:</span>
                   <span className="font-medium ml-2">
-                    {Math.min(...variants.map(v => calculateFinalPrice(v.originalPrice, v.salePercentage))).toLocaleString('vi-VN')} VNĐ
+                    {variants.length > 0 && variants.some(v => v.originalPrice > 0) ? 
+                      Math.min(...variants
+                        .filter(v => v.originalPrice > 0)
+                        .map(v => calculateFinalPrice(v.originalPrice, v.salePercentage))
+                      ).toLocaleString('vi-VN') : '0'} VNĐ
                   </span>
                 </div>
               </div>
@@ -243,12 +267,5 @@ function VariantManager({
   );
 }
 
-// Memoize component to prevent unnecessary re-renders
-export default React.memo(VariantManager, (prevProps, nextProps) => {
-  // Only re-render if variants array or errors actually changed
-  return (
-    JSON.stringify(prevProps.variants) === JSON.stringify(nextProps.variants) &&
-    JSON.stringify(prevProps.errors) === JSON.stringify(nextProps.errors) &&
-    prevProps.onVariantsChange === nextProps.onVariantsChange
-  );
-});
+// Tạm thời tắt memo để debug
+export default VariantManager;

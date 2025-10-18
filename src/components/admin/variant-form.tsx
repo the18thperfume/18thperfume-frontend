@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { VariantFormData } from '@/types';
 import { Save, X } from 'lucide-react';
 
-// Variant validation schema
+// Variant validation schema - giữ nguyên types để tránh conflict
 const variantValidationSchema = z.object({
   variantName: z
     .string()
@@ -40,9 +40,8 @@ const variantValidationSchema = z.object({
   
   imageUrl: z
     .string()
-    .url('URL ảnh không hợp lệ')
     .optional()
-    .or(z.literal(''))
+    .refine((val) => !val || val === '' || /^https?:\/\/.+/.test(val), 'URL ảnh không hợp lệ')
 });
 
 type VariantFormValidation = z.infer<typeof variantValidationSchema>;
@@ -116,8 +115,16 @@ export default function VariantForm({
     onSubmit(submissionData);
   };
 
+  // Prevent Enter key from submitting parent form
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  };
+
   return (
-    <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
+    <div className="space-y-6" onKeyDown={handleKeyDown}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Tên biến thể */}
         <div>
@@ -287,11 +294,15 @@ export default function VariantForm({
           <X className="mr-2 h-4 w-4" />
           Hủy
         </Button>
-        <Button type="submit" disabled={isSubmitting}>
+        <Button 
+          type="button" 
+          disabled={isSubmitting}
+          onClick={handleSubmit(onFormSubmit)}
+        >
           <Save className="mr-2 h-4 w-4" />
           {isSubmitting ? 'Đang lưu...' : 'Lưu biến thể (tạm thời)'}
         </Button>
       </div>
-    </form>
+    </div>
   );
 }
