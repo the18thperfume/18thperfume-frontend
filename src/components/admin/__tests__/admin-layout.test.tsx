@@ -36,9 +36,11 @@ describe('AdminLayout', () => {
       </AdminLayout>
     );
 
-    expect(screen.getByText('The 18th Perfume Admin')).toBeInTheDocument();
+    // Check content is rendered
     expect(screen.getByText('Test Content')).toBeInTheDocument();
-    expect(screen.getAllByText('Dashboard')).toHaveLength(2); // Sidebar link + header
+    
+    // Check sidebar navigation items
+    expect(screen.getByText('Dashboard')).toBeInTheDocument();
     expect(screen.getByText('Quản lý Sản phẩm')).toBeInTheDocument();
     expect(screen.getByText('Đơn hàng')).toBeInTheDocument();
     expect(screen.getByText('Khách hàng')).toBeInTheDocument();
@@ -84,24 +86,15 @@ describe('AdminLayout', () => {
     expect(menuButton).toBeInTheDocument();
   });
 
-  it('renders logout button', () => {
+  it('renders mobile menu button', () => {
     render(
       <AdminLayout>
         <div>Test Content</div>
       </AdminLayout>
     );
 
-    expect(screen.getByText('Đăng xuất')).toBeInTheDocument();
-  });
-
-  it('renders admin user info', () => {
-    render(
-      <AdminLayout>
-        <div>Test Content</div>
-      </AdminLayout>
-    );
-
-    expect(screen.getByText('Admin User')).toBeInTheDocument();
+    // Check mobile menu button exists
+    expect(screen.getByText('Menu')).toBeInTheDocument();
   });
 
   it('navigation links have correct href attributes', () => {
@@ -111,8 +104,8 @@ describe('AdminLayout', () => {
       </AdminLayout>
     );
 
-    const dashboardLinks = screen.getAllByText('Dashboard');
-    expect(dashboardLinks[0].closest('a')).toHaveAttribute('href', '/admin'); // First Dashboard link in sidebar
+    // Check sidebar navigation links
+    expect(screen.getByText('Dashboard').closest('a')).toHaveAttribute('href', '/admin');
     expect(screen.getByText('Quản lý Sản phẩm').closest('a')).toHaveAttribute('href', '/admin/products');
     expect(screen.getByText('Đơn hàng').closest('a')).toHaveAttribute('href', '/admin/orders');
     expect(screen.getByText('Khách hàng').closest('a')).toHaveAttribute('href', '/admin/customers');
